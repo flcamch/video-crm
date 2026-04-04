@@ -1,0 +1,237 @@
+VIDEO CRM - COMPLETE PROJECT FILE MANIFEST
+==========================================
+
+PROJECT STRUCTURE
+=================
+
+Configuration Files (Root)
+- package.json                     (npm dependencies and scripts)
+- tsconfig.json                    (TypeScript configuration)
+- next.config.js                   (Next.js configuration)
+- tailwind.config.js               (Tailwind CSS configuration)
+- postcss.config.js                (PostCSS configuration)
+- .env.example                     (environment variables template)
+- .gitignore                       (git ignore rules)
+- middleware.ts                    (route protection middleware)
+
+Documentation
+- README.md                        (project overview and features)
+- DEPLOYMENT.md                    (deployment instructions)
+- FILE_MANIFEST.txt                (this file)
+
+Library Code (lib/)
+- lib/types.ts                     (TypeScript interfaces)
+- lib/auth.ts                      (JWT and password utilities)
+- lib/db.ts                        (SQLite database layer with all CRUD operations)
+
+Global Setup (app/)
+- app/layout.tsx                   (root HTML layout)
+- app/globals.css                  (global styles and Tailwind directives)
+- app/page.tsx                     (home page redirect logic)
+
+Authentication Pages
+- app/login/page.tsx               (login form)
+- app/setup/page.tsx               (initial admin setup)
+
+Public Pages
+- app/pitch/[token]/page.tsx       (public pitch/offer presentation page)
+
+Dashboard (Protected)
+- app/dashboard/layout.tsx         (sidebar navigation and layout)
+- app/dashboard/page.tsx           (dashboard overview with stats)
+- app/dashboard/contacts/page.tsx  (contacts and companies management)
+- app/dashboard/pipeline/page.tsx  (Kanban board and deal management)
+- app/dashboard/templates/page.tsx (email template management)
+
+API Routes (app/api/)
+
+Authentication
+- app/api/auth/login/route.ts      (POST: login with email/password)
+- app/api/auth/logout/route.ts     (POST: logout and clear session)
+- app/api/auth/setup/route.ts      (POST: create initial admin user)
+- app/api/seed/route.ts            (POST: create test admin for development)
+
+Contacts
+- app/api/contacts/route.ts        (GET: all contacts, POST: create contact)
+- app/api/contacts/[id]/route.ts   (GET/PUT/DELETE: single contact)
+
+Companies
+- app/api/companies/route.ts       (GET: all companies, POST: create company)
+- app/api/companies/[id]/route.ts  (PUT/DELETE: single company)
+
+Deals
+- app/api/deals/route.ts           (GET: all deals, POST: create deal)
+- app/api/deals/[id]/route.ts      (GET/PUT/DELETE: single deal with offer)
+
+Offers
+- app/api/offers/route.ts          (POST: create offer with unique token)
+- app/api/offers/[token]/route.ts  (GET: public offer, PUT: update offer)
+
+Email Templates
+- app/api/templates/route.ts       (GET: all templates, POST: create template)
+- app/api/templates/[id]/route.ts  (PUT/DELETE: single template)
+
+Auto-Created at Runtime
+- data/crm.db                      (SQLite database, auto-created on first run)
+- data/crm.db-shm                  (SQLite WAL shared memory)
+- data/crm.db-wal                  (SQLite WAL write-ahead log)
+
+DATABASE SCHEMA
+===============
+
+Users Table
+- id: INTEGER PRIMARY KEY AUTOINCREMENT
+- name: TEXT NOT NULL
+- email: TEXT UNIQUE NOT NULL
+- password_hash: TEXT NOT NULL
+- role: TEXT DEFAULT 'user'
+- created_at: TEXT NOT NULL
+
+Companies Table
+- id: INTEGER PRIMARY KEY AUTOINCREMENT
+- name: TEXT NOT NULL
+- industry: TEXT
+- website: TEXT
+- notes: TEXT
+- created_at: TEXT NOT NULL
+
+Contacts Table
+- id: INTEGER PRIMARY KEY AUTOINCREMENT
+- company_id: INTEGER (FK → companies)
+- first_name: TEXT NOT NULL
+- last_name: TEXT NOT NULL
+- email: TEXT
+- phone: TEXT
+- position: TEXT
+- notes: TEXT
+- created_at: TEXT NOT NULL
+
+Deals Table
+- id: INTEGER PRIMARY KEY AUTOINCREMENT
+- contact_id: INTEGER (FK → contacts)
+- company_id: INTEGER (FK → companies)
+- title: TEXT NOT NULL
+- stage: TEXT DEFAULT 'lead' (lead|consultation|quote|won|lost)
+- value: REAL
+- notes: TEXT
+- created_at: TEXT NOT NULL
+
+Offers Table
+- id: INTEGER PRIMARY KEY AUTOINCREMENT
+- deal_id: INTEGER NOT NULL (FK → deals, CASCADE DELETE)
+- token: TEXT UNIQUE NOT NULL
+- title: TEXT NOT NULL
+- subtitle: TEXT
+- description: TEXT
+- services: TEXT (JSON stringified array)
+- timeline_start: TEXT
+- timeline_end: TEXT
+- valid_until: TEXT
+- status: TEXT DEFAULT 'draft'
+- viewed_at: TEXT
+- created_at: TEXT NOT NULL
+
+Email Templates Table
+- id: INTEGER PRIMARY KEY AUTOINCREMENT
+- name: TEXT NOT NULL
+- subject: TEXT NOT NULL
+- body: TEXT NOT NULL
+- created_at: TEXT NOT NULL
+
+FEATURE OVERVIEW
+================
+
+Dashboard Stats
+- Total contacts count
+- Total companies count
+- Open deals count
+- Won deals revenue
+- Recent deals listing
+
+Contacts Management
+- Create, read, update, delete contacts
+- Assign contacts to companies
+- Store phone, email, position, notes
+- Search and filter contacts
+- Tabbed interface for contacts and companies
+
+Pipeline / Deal Management
+- 5-stage Kanban board (Lead, Consultation, Quote, Won, Lost)
+- Drag-and-drop would require additional component
+- Deal creation with contact and company assignment
+- Deal value tracking
+- Stage transition management
+
+Offer Management
+- Create professional offers tied to deals
+- Include multiple services with pricing
+- Set timeline (start/end dates)
+- Set validity period
+- Generate unique shareable links
+- Track offer views
+
+Pitch Pages
+- Public, unauthenticated access
+- Beautiful, print-friendly design
+- Shows company logo placeholder
+- Project title and description
+- Services and pricing table
+- Timeline visualization
+- Valid until date display
+- Call-to-action buttons
+
+Email Templates
+- Create reusable email templates
+- Support placeholders: {{vorname}}, {{nachname}}, {{firma}}, {{titel}}
+- Manage subject lines and body text
+- CRUD operations on templates
+
+Authentication & Security
+- JWT-based session management (7-day expiry)
+- HTTP-Only cookies (CSRF protection)
+- bcryptjs password hashing (10 rounds)
+- Route middleware for protection
+- Setup page only accessible when no users exist
+- Seed endpoint for development
+
+TECHNOLOGY SUMMARY
+==================
+
+Framework: Next.js 14 (App Router)
+Language: TypeScript
+Styling: Tailwind CSS with custom components
+Database: SQLite with better-sqlite3
+Auth: JWT (jose library) + bcryptjs
+State Management: React Hooks (useState, useEffect)
+Server Components: React Server Components for layouts
+UI Patterns: Client components for interactive features
+
+DEPLOYMENT OPTIONS
+===================
+
+1. Local Development
+   npm run dev → http://localhost:3000
+
+2. Local Production Build
+   npm run build && npm start
+
+3. Railway.app (Cloud Platform)
+   - GitHub integration
+   - Automatic deployments
+   - Environment variables
+   - Custom domains
+
+4. Any Node.js Hosting
+   - Vercel
+   - AWS
+   - Heroku
+   - DigitalOcean
+   - Custom VPS
+
+All files are production-ready with:
+- Full TypeScript type safety
+- Error handling and validation
+- HTTP-only cookie security
+- Database transaction safety
+- Input sanitization
+- CORS protection (via Next.js defaults)
