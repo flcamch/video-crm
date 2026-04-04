@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
 
     const deal = createDeal({
-      contact_id: data.contact_id ? parseInt(data.contact_id) : 0,
-      company_id: data.company_id ? parseInt(data.company_id) : 0,
+      contact_id: data.contact_id ? parseInt(data.contact_id) : null,
+      company_id: data.company_id ? parseInt(data.company_id) : null,
       title: data.title,
       stage: data.stage || 'lead',
       value: data.value ? parseFloat(data.value) : 0,
