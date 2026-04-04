@@ -137,7 +137,7 @@ export default function TemplatesPage() {
                   </div>
 
                   <p className="text-xs text-gray-500 mb-4">
-                    Verfügbare Platzhalter: {'{{'}{'{'}'}vorname{'{'}'}'}{'}}'}}, {'{{'}{'{'}'}nachname{'{'}'}{'}}'}}, {'{{'}{'{'}'}firma{'{'}'}{'}}'}}, {'{{'}{'{'}'}titel{'{}'}{'}}'}}'}}
+                  Verfügbare Platzhalter: {'{{vorname}}'}, {'{{nachname}}'}, {'{{firma}}'}, {'{{titel}}'}
                   </p>
 
                   <div className="flex gap-2">
