@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
 
     const contact = createContact({
-      company_id: data.company_id ? parseInt(data.company_id) : 0,
+      company_id: data.company_id ? parseInt(data.company_id) : null,
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email || '',
