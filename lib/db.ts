@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
-import { User, Company, Contact, Deal, Offer, EmailTemplate, Service } from './types'
+import { User, Company, Contact, Deal, Offer, EmailTemplate, Service, Activity } from './types'
 
 const DB_PATH = path.join(process.cwd(), 'data', 'crm.db')
 
@@ -93,11 +93,25 @@ function initializeTables() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS activities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      contact_id INTEGER,
+      deal_id INTEGER,
+      type TEXT NOT NULL DEFAULT 'note',
+      title TEXT NOT NULL,
+      note TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE SET NULL,
+      FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE SET NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company_id);
     CREATE INDEX IF NOT EXISTS idx_deals_contact ON deals(contact_id);
     CREATE INDEX IF NOT EXISTS idx_deals_company ON deals(company_id);
     CREATE INDEX IF NOT EXISTS idx_offers_deal ON offers(deal_id);
     CREATE INDEX IF NOT EXISTS idx_offers_token ON offers(token);
+    CREATE INDEX IF NOT EXISTS idx_activities_contact ON activities(contact_id);
+    CREATE INDEX IF NOT EXISTS idx_activities_deal ON activities(deal_id);
   `)
 }
 
@@ -154,7 +168,7 @@ export function getContact(id: number): Contact | null {
   return stmt.get(id) as Contact | null
 }
 
-export function createContact(data: Omit<Contact, 'id' | 'created_at' | 'company_name'>): Contact {
+export function createContact(data: Omit<Contact, 'id' | 'created_at' | 'company_name'> & { company_id: number | null }): Contact {
   const database = getDb()
   const now = new Date().toISOString()
   const stmt = database.prepare(
@@ -334,7 +348,7 @@ export function getDeal(id: number): Deal | null {
   return stmt.get(id) as Deal | null
 }
 
-export function createDeal(data: Omit<Deal, 'id' | 'created_at' | 'contact_name' | 'company_name'>): Deal {
+export function createDeal(data: Omit<Deal, 'id' | 'created_at' | 'contact_name' | 'company_name'> & { contact_id: number | null, company_id: number | null }): Deal {
   const database = getDb()
   const now = new Date().toISOString()
   const stmt = database.prepare(
@@ -589,6 +603,57 @@ export function updateEmailTemplate(id: number, data: Partial<Omit<EmailTemplate
 export function deleteEmailTemplate(id: number): boolean {
   const database = getDb()
   const stmt = database.prepare('DELETE FROM email_templates WHERE id = ?')
+  const result = stmt.run(id)
+  return result.changes > 0
+}
+
+export function getActivitiesByContact(contactId: number): Activity[] {
+  const database = getDb()
+  const stmt = database.prepare('SELECT * FROM activities WHERE contact_id = ? ORDER BY created_at DESC')
+  return stmt.all(contactId) as Activity[]
+}
+
+export function getActivitiesByDeal(dealId: number): Activity[] {
+  const database = getDb()
+  const stmt = database.prepare('SELECT * FROM activities WHERE deal_id = ? ORDER BY created_at DESC')
+  return stmt.all(dealId) as Activity[]
+}
+
+export function createActivity(data: {
+  contact_id?: number
+  deal_id?: number
+  type: string
+  title: string
+  note?: string
+}): Activity {
+  const database = getDb()
+  const now = new Date().toISOString()
+  const stmt = database.prepare(
+    'INSERT INTO activities (contact_id, deal_id, type, title, note, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  const result = stmt.run(
+    data.contact_id || null,
+    data.deal_id || null,
+    data.type,
+    data.title,
+    data.note || null,
+    now
+  )
+  const id = result.lastInsertRowid as number
+  return {
+    id,
+    contact_id: data.contact_id,
+    deal_id: data.deal_id,
+    type: data.type as 'call' | 'email' | 'meeting' | 'note',
+    title: data.title,
+    note: data.note,
+    created_at: now,
+  }
+}
+
+export function deleteActivity(id: number): boolean {
+  const database = getDb()
+  const stmt = database.prepare('DELETE FROM activities WHERE id = ?')
   const result = stmt.run(id)
   return result.changes > 0
 }
