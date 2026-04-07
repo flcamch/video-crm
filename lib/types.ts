@@ -18,7 +18,7 @@ export interface Company {
 
 export interface Contact {
   id: number
-  company_id: number
+  company_id: number | null
   first_name: string
   last_name: string
   email: string
@@ -36,8 +36,8 @@ export interface Service {
 
 export interface Deal {
   id: number
-  contact_id: number
-  company_id: number
+  contact_id: number | null
+  company_id: number | null
   title: string
   stage: string
   value: number
@@ -76,4 +76,14 @@ export interface JWTPayload {
   email: string
   name: string
   [key: string]: unknown
+}
+
+export interface Activity {
+  id: number
+  contact_id?: number
+  deal_id?: number
+  type: 'call' | 'email' | 'meeting' | 'note'
+  title: string
+  note?: string
+  created_at: string
 }
