@@ -325,13 +325,12 @@ export default function PipelinePage() {
                 </div>
                 <div
                   onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
+                  onDragEnter={() => setDragOverStage(stage.id)}
+                  onDragLeave={() => setDragOverStage(null)}
                   onDrop={(e) => handleDrop(e, stage.id)}
                   className={`flex-1 bg-gray-50 rounded-b-lg p-4 space-y-3 min-h-96 transition-all ${
                     dragOverStage === stage.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
                   }`}
-                  onDragEnter={() => setDragOverStage(stage.id)}
-                  onDragLeave={() => setDragOverStage(null)}
                 >
                   {stageDeals(stage.id).map(deal => (
                     <div
